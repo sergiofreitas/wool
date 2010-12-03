@@ -46,7 +46,9 @@ class Router
   }
 }
 
-Wool::bind('init', function($params){
+function router_bind($params){
   Wool::trigger('dispatch', $params);
   return Router::dispatch($params['url']);
-});
+}
+
+Wool::bind('init', 'router_bind');

@@ -74,6 +74,9 @@ class Wool
   static public function trigger($event, $params=array())
   {
     $params['chain'] = null;
+    if ( !isset(self::$events[$event]) )
+      return null;
+      
     foreach( self::$events[$event] as $callback ){
       $params['chain'] = call_user_func($callback, $params);
     }
@@ -82,16 +85,33 @@ class Wool
 
   static public function run()
   {
-    self::trigger('init', array('url'=>$_SERVER['PATH_INFO']));
+    if ( isset($_SERVER['PATH_INFO']) ){
+      $url = $_SERVER['PATH_INFO'];
+    } else {
+      if ( isset($_SERVER['REQUEST_URI']) ){
+        $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $url = rawurldecode($url);
+      } elseif ( isset($_SERVER['PHP_SELF']) ) {
+        $url = $_SERVER['PHP_SELF'];
+      } elseif ( isset($_SERVER['REDIRECT_URL']) ){
+        $url = $_SERVER['REDIRECT_URL'];
+      }
+      $base = str_replace('index.php','', $_SERVER['SCRIPT_NAME']);
+      $url = preg_replace("@^$base@",'',$url);
+    }
+    // pega todos os eventos  
+    self::trigger('init', array('url'=>$url));
     self::trigger('shutdown');
   }
 }
 
-/* autoload function */
-spl_autoload_register(function($classname){
+
+function wool_autoload($classname){
   $file = strtolower(str_replace('_',DS, $classname));
   Wool::load($file);
-});
+}
+/* autoload function */
+spl_autoload_register('wool_autoload');
 
 /*
  * Wool::load(); 
