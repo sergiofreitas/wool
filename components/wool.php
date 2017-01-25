@@ -99,6 +99,7 @@ class Wool
       $base = str_replace('index.php','', $_SERVER['SCRIPT_NAME']);
       $url = preg_replace("@^$base@",'',$url);
     }
+
     // pega todos os eventos  
     self::trigger('init', array('url'=>$url));
     self::trigger('shutdown');
